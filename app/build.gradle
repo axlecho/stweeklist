@@ -7,7 +7,7 @@ android {
         applicationId "com.songtaste.weeklist"
         minSdkVersion 13
         targetSdkVersion 21
-        versionCode 4
+        versionCode 5
         versionName "1.0"
     }
     buildTypes {
