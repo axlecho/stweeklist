@@ -1,7 +1,9 @@
 package com.songtaste.weeklist;
 
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
@@ -9,6 +11,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,6 +44,8 @@ public class WeeklistActivity extends ActionBarActivity {
     private ServiceConnection playerServiceConnection;
     private PlayerService playerService;
 
+    private boolean deadflag = false;
+
     class PlayerInterface {
         public ImageButton lastBtn;
         public ImageButton playBtn;
@@ -67,7 +72,7 @@ public class WeeklistActivity extends ActionBarActivity {
             lastBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    playerService.last();
+                    playerService.previous();
                 }
             });
 
@@ -93,6 +98,7 @@ public class WeeklistActivity extends ActionBarActivity {
     }
 
     private PlayerInterface player = new PlayerInterface();
+    private GetWeeklistAsyncTask getWeeklistAsyncTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,7 +116,13 @@ public class WeeklistActivity extends ActionBarActivity {
                 @Override
                 public boolean onNavigationItemSelected(int itemPosition, long itemId) {
                     LogUtil.d(dateList.get(itemPosition));
-                    new GetWeeklistAsyncTask().execute(dateList.get(itemPosition));
+                    if (getWeeklistAsyncTask != null && getWeeklistAsyncTask.getStatus() != AsyncTask.Status.FINISHED) {
+                        LogUtil.d("getWeeklistAsyncTask is canceled");
+                        getWeeklistAsyncTask.cancel(false);
+                    }
+
+                    getWeeklistAsyncTask = new GetWeeklistAsyncTask();
+                    getWeeklistAsyncTask.execute(dateList.get(itemPosition));
                     return false;
                 }
             });
@@ -128,7 +140,9 @@ public class WeeklistActivity extends ActionBarActivity {
                 player.setPlay(true);
             }
         });
-        new GetWeeklistAsyncTask().execute();
+
+        getWeeklistAsyncTask = new GetWeeklistAsyncTask();
+        getWeeklistAsyncTask.execute();
         player.lastBtn = (ImageButton) findViewById(R.id.last_btn);
         player.playBtn = (ImageButton) findViewById(R.id.start_stop_btn);
         player.nextBtn = (ImageButton) findViewById(R.id.next_btn);
@@ -161,6 +175,26 @@ public class WeeklistActivity extends ActionBarActivity {
     protected void onStop() {
         super.onStop();
         this.unbindService(playerServiceConnection);
+        if (deadflag) {
+            playerService.hideNotification();
+            playerService.stopSelf();
+        }
+    }
+
+    public void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+        if (playerService != null) {
+            playerService.hideNotification();
+        }
+    }
+
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
+        if (playerService != null) {
+            playerService.showNotification();
+        }
     }
 
     @Override
@@ -272,13 +306,28 @@ public class WeeklistActivity extends ActionBarActivity {
         public TextView songname;
     }
 
-    public void onResume() {
-        super.onResume();
-        MobclickAgent.onResume(this);
-    }
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            new AlertDialog.Builder(this).setMessage("确认退出？")
+                    .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            WeeklistActivity.this.finish();
+                            deadflag = true;
+                        }
+                    })
+                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).show();
 
-    public void onPause() {
-        super.onPause();
-        MobclickAgent.onPause(this);
+
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }
