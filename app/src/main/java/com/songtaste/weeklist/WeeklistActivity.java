@@ -44,6 +44,9 @@ public class WeeklistActivity extends ActionBarActivity {
     private ServiceConnection playerServiceConnection;
     private PlayerService playerService;
 
+    private ServiceConnection downloadServiceConnection;
+    private DownloadService downloadService;
+
     private boolean deadflag = false;
 
     class PlayerInterface {
@@ -141,6 +144,22 @@ public class WeeklistActivity extends ActionBarActivity {
             }
         });
 
+        weeklistListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                final SongInfo si = weeklistAdapter.getItem(position);
+                new AlertDialog.Builder(WeeklistActivity.this).setMessage("下载:" + si.getSongName())
+                        .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                downloadService.addToDownloadList(si);
+                                downloadService.startDownload();
+                                dialog.dismiss();
+                            }
+                        }).show();
+                return true;
+            }
+        });
         getWeeklistAsyncTask = new GetWeeklistAsyncTask();
         getWeeklistAsyncTask.execute();
         player.lastBtn = (ImageButton) findViewById(R.id.last_btn);
@@ -161,6 +180,19 @@ public class WeeklistActivity extends ActionBarActivity {
             }
         };
 
+        downloadServiceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                LogUtil.d("download service connected");
+                downloadService = ((DownloadService.DownloadBinder) service).getService();
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+
+            }
+        };
+
     }
 
     @Override
@@ -169,15 +201,21 @@ public class WeeklistActivity extends ActionBarActivity {
         Intent service = new Intent(this.getApplicationContext(), PlayerService.class);
         this.startService(service);
         this.bindService(service, playerServiceConnection, Context.BIND_AUTO_CREATE);
+
+        service = new Intent(this.getApplicationContext(), DownloadService.class);
+        this.startService(service);
+        this.bindService(service, downloadServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         this.unbindService(playerServiceConnection);
+
         if (deadflag) {
             playerService.hideNotification();
             playerService.stopSelf();
+            downloadService.stopSelf();
         }
     }
 
@@ -214,6 +252,10 @@ public class WeeklistActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        } else if (id == R.id.action_showdownload) {
+            Intent intent = new Intent();
+            intent.setClass(this, DownloadActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);

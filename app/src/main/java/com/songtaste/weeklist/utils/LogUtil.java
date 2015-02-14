@@ -13,7 +13,7 @@ public class LogUtil {
     private static String SPLITMARK = "###";
     private static String TAG = "unknown";
     private static String METHODNAME = "unknown";
-    private static String PACKETNAME = "cn.meowu.app.utils.LogUtil";
+    private static String PACKETNAME = "com.songtaste.weeklist.utils.LogUtil";
 
     private static void setTagNMeethodname() {
         StackTraceElement[] sts = Thread.currentThread().getStackTrace();

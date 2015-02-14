@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Created by axlecho on 2015/2/9.
  */
-public class SongInfo {
+public class SongInfo implements Serializable {
     private int Idx;            // 周排名
     private int SongID;         // 歌曲Id
     private String SongName;    // 歌曲名称

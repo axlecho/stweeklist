@@ -247,4 +247,5 @@ public class PlayerService extends Service {
 
         setState(true);
     }
+
 }
