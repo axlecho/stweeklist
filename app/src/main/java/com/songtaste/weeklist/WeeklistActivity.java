@@ -50,7 +50,6 @@ public class WeeklistActivity extends ActionBarActivity {
     private boolean deadflag = false;
 
     class PlayerInterface {
-        public ImageButton lastBtn;
         public ImageButton playBtn;
         public ImageButton nextBtn;
 
@@ -72,13 +71,6 @@ public class WeeklistActivity extends ActionBarActivity {
         };
 
         public void initBtn() {
-            lastBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    playerService.previous();
-                }
-            });
-
             nextBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -91,10 +83,10 @@ public class WeeklistActivity extends ActionBarActivity {
 
         public void setPlay(Boolean flag) {
             if (flag) {
-                playBtn.setImageResource(R.drawable.ic_pause);
+                playBtn.setImageResource(R.drawable.ic_pause_white);
                 playBtn.setOnClickListener(pauseListener);
             } else {
-                playBtn.setImageResource(R.drawable.ic_play);
+                playBtn.setImageResource(R.drawable.ic_play_white);
                 playBtn.setOnClickListener(playListener);
             }
         }
@@ -162,7 +154,6 @@ public class WeeklistActivity extends ActionBarActivity {
         });
         getWeeklistAsyncTask = new GetWeeklistAsyncTask();
         getWeeklistAsyncTask.execute();
-        player.lastBtn = (ImageButton) findViewById(R.id.last_btn);
         player.playBtn = (ImageButton) findViewById(R.id.start_stop_btn);
         player.nextBtn = (ImageButton) findViewById(R.id.next_btn);
         player.initBtn();

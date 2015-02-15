@@ -1,30 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/player_layout"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="64dp"
+    android:padding="8dp"
+    android:gravity="center"
+    android:layout_gravity="center">
 
-    <ImageButton
-        android:id="@+id/last_btn"
+    <ImageView
+        android:id="@+id/songImg_imageview"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_empty_state"
+        android:background="#aaa" />
+
+    <TextView
+        android:gravity="center_vertical"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:src="@drawable/ic_last"
-        android:padding="4dp" />
+        android:layout_toRightOf="@id/songImg_imageview"
+        android:id="@+id/songname_textview"
+        android:textSize="18dp"
+        android:text="平凡之路"
+        android:textColor="#444"
+        android:paddingLeft="8dp" />
 
-    <ImageButton
-        android:id="@+id/start_stop_btn"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="96dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:src="@drawable/ic_play"
-        android:padding="4dp" />
+        android:layout_toRightOf="@id/songname_textview"
+        android:paddingLeft="8dp"
+        android:gravity="center">
 
-    <ImageButton
-        android:padding="4dp"
-        android:id="@+id/next_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:src="@drawable/ic_next"
-        android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/start_stop_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/ic_play_white"
+            android:padding="4dp"
+            android:background="@android:color/transparent" />
+
+        <ImageButton
+            android:padding="16dp"
+            android:id="@+id/next_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_next_white"
+            android:scaleType="centerInside"
+            android:layout_weight="1"
+            android:background="@android:color/transparent" />
+    </LinearLayout>
 </LinearLayout>

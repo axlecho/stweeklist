@@ -170,13 +170,13 @@ public class PlayerService extends Service {
     public void setState(boolean playing) {
         state = playing;
         if (state) {
-            contentView.setImageViewResource(R.id.start_stop_btn, R.drawable.ic_play);
+            contentView.setImageViewResource(R.id.start_stop_btn, R.drawable.ic_play_white);
             Intent intent = new Intent(getApplicationContext(), PlayerService.class);
             intent.setAction(ACTION_PAUSE);
             PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
             contentView.setOnClickPendingIntent(R.id.start_stop_btn, pendingIntent);
         } else {
-            contentView.setImageViewResource(R.id.start_stop_btn, R.drawable.ic_pause);
+            contentView.setImageViewResource(R.id.start_stop_btn, R.drawable.ic_pause_white);
             Intent intent = new Intent(getApplicationContext(), PlayerService.class);
             intent.setAction(ACTION_PLAY);
             PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
@@ -236,14 +236,13 @@ public class PlayerService extends Service {
         notification.contentView = contentView;
 
         Intent intent = new Intent(getApplicationContext(), PlayerService.class);
-        intent.setAction(ACTION_PREVIOUS);
-        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
-        contentView.setOnClickPendingIntent(R.id.last_btn, pendingIntent);
-
-        intent = new Intent(getApplicationContext(), PlayerService.class);
         intent.setAction(ACTION_NEXT);
-        pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
         contentView.setOnClickPendingIntent(R.id.next_btn, pendingIntent);
+
+        intent = new Intent(getApplicationContext(), WeeklistActivity.class);
+        pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+        contentView.setOnClickPendingIntent(R.id.player_layout, pendingIntent);
 
         setState(true);
     }
