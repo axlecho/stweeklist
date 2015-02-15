@@ -49,14 +49,14 @@ public class WeeklistActivity extends ActionBarActivity {
 
     private boolean deadflag = false;
 
-    class PlayerInterface {
+    class Player implements com.songtaste.weeklist.PlayerInterface {
         public ImageButton playBtn;
         public ImageButton nextBtn;
 
+        public TextView songNameTextView;
         private View.OnClickListener playListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setPlay(true);
                 playerService.play();
             }
         };
@@ -65,8 +65,7 @@ public class WeeklistActivity extends ActionBarActivity {
 
             @Override
             public void onClick(View v) {
-                setPlay(false);
-                playerService.stop();
+                playerService.pause();
             }
         };
 
@@ -77,22 +76,32 @@ public class WeeklistActivity extends ActionBarActivity {
                     playerService.next();
                 }
             });
-
-            setPlay(false);
         }
 
-        public void setPlay(Boolean flag) {
-            if (flag) {
+        @Override
+        public void setSongName(String songName) {
+            songNameTextView.setText(songName);
+        }
+
+        @Override
+        public void setPlayStatus(int status) {
+            if (status == PlayerInterface.PLAY_STATUS) {
                 playBtn.setImageResource(R.drawable.ic_pause_white);
                 playBtn.setOnClickListener(pauseListener);
-            } else {
+            } else if (status == PlayerInterface.PAUSE_STATUS) {
                 playBtn.setImageResource(R.drawable.ic_play_white);
                 playBtn.setOnClickListener(playListener);
             }
         }
+
+        @Override
+        public void setProgress(int progress) {
+
+        }
     }
 
-    private PlayerInterface player = new PlayerInterface();
+    private Player player = new Player();
+
     private GetWeeklistAsyncTask getWeeklistAsyncTask;
 
     @Override
@@ -132,7 +141,6 @@ public class WeeklistActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 playerService.playSongIndex(position);
-                player.setPlay(true);
             }
         });
 
@@ -154,8 +162,10 @@ public class WeeklistActivity extends ActionBarActivity {
         });
         getWeeklistAsyncTask = new GetWeeklistAsyncTask();
         getWeeklistAsyncTask.execute();
-        player.playBtn = (ImageButton) findViewById(R.id.start_stop_btn);
+
+        player.playBtn = (ImageButton) findViewById(R.id.play_pause_btn);
         player.nextBtn = (ImageButton) findViewById(R.id.next_btn);
+        player.songNameTextView = (TextView) findViewById(R.id.songname_textview);
         player.initBtn();
 
         playerServiceConnection = new ServiceConnection() {
@@ -163,11 +173,13 @@ public class WeeklistActivity extends ActionBarActivity {
             public void onServiceConnected(ComponentName name, IBinder service) {
                 LogUtil.d("service connected");
                 playerService = ((PlayerService.PlayerBinder) service).getService();
+                playerService.addPlayer(player);
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 LogUtil.d("service disconnected");
+                playerService.removePlayer(player);
             }
         };
 
@@ -210,6 +222,15 @@ public class WeeklistActivity extends ActionBarActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        playerService.hideNotification();
+        playerService.stopSelf();
+        downloadService.stopSelf();
+        super.onDestroy();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         MobclickAgent.onResume(this);
@@ -218,6 +239,7 @@ public class WeeklistActivity extends ActionBarActivity {
         }
     }
 
+    @Override
     public void onPause() {
         super.onPause();
         MobclickAgent.onPause(this);
@@ -316,12 +338,16 @@ public class WeeklistActivity extends ActionBarActivity {
                 convertView = LayoutInflater.from(context).inflate(R.layout.item_weeklist, null);
                 holder = new ViewHolder();
                 holder.songname = (TextView) convertView.findViewById(R.id.weeklist_item_songname_textview);
+                holder.position = (TextView) convertView.findViewById(R.id.weeklist_item_position_textview);
+                holder.uploader = (TextView) convertView.findViewById(R.id.weeklist_item_uploader_textview);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
 
             holder.songname.setText(songInfoList.get(position).getSongName());
+            holder.position.setText(String.valueOf(songInfoList.get(position).getIdx()));
+            holder.uploader.setText(songInfoList.get(position).getUName());
             return convertView;
         }
 
@@ -337,6 +363,8 @@ public class WeeklistActivity extends ActionBarActivity {
 
     public static class ViewHolder {
         public TextView songname;
+        public TextView position;
+        public TextView uploader;
     }
 
     @Override

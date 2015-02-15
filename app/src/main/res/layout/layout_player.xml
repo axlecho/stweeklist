@@ -13,6 +13,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:src="@drawable/ic_empty_state"
+        android:padding="8dp"
         android:background="#aaa" />
 
     <TextView
@@ -22,10 +23,11 @@
         android:layout_weight="1"
         android:layout_toRightOf="@id/songImg_imageview"
         android:id="@+id/songname_textview"
-        android:textSize="18dp"
-        android:text="平凡之路"
+        android:textSize="12sp"
+        android:text=""
         android:textColor="#444"
-        android:paddingLeft="8dp" />
+        android:paddingLeft="8dp"
+        android:singleLine="true" />
 
     <LinearLayout
         android:layout_width="96dp"
@@ -36,7 +38,7 @@
 
 
         <ImageButton
-            android:id="@+id/start_stop_btn"
+            android:id="@+id/play_pause_btn"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"

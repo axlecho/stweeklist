@@ -152,7 +152,7 @@ public class DownloadActivity extends ActionBarActivity {
 
             SongInfo si = dj.getSongInfo();
             holder.songname.setText(si.getSongName());
-            holder.process.setText(String.valueOf(dj.getProcess()));
+            holder.process.setText(String.valueOf(dj.getProcess()) + "%");
             holder.progressBar.setProgress(dj.getProcess());
             return convertView;
         }

@@ -1,11 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:padding="8dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="48dp">
+
+    <TextView
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/weeklist_item_position_textview"
+        android:text="20"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:paddingRight="5dp"
+        android:gravity="right"
+        android:singleLine="true" />
 
     <TextView
         android:id="@+id/weeklist_item_songname_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-</LinearLayout>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="A song"
+        android:layout_weight="1"
+        android:singleLine="true"
+        android:textSize="14dp"
+        android:textColor="#333"
+        android:layout_toRightOf="@+id/weeklist_item_position_textview"
+        android:layout_toEndOf="@+id/weeklist_item_position_textview" />
+
+    <TextView
+        android:id="@+id/weeklist_item_uploader_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="aaaaaa"
+        android:singleLine="true"
+        android:textSize="12dp"
+        android:textColor="#aaa"
+        android:layout_toRightOf="@+id/weeklist_item_position_textview"
+        android:layout_toEndOf="@+id/weeklist_item_position_textview"
+        android:layout_below="@id/weeklist_item_songname_textview" />
+</RelativeLayout>

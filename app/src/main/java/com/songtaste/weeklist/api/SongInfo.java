@@ -55,5 +55,7 @@ public class SongInfo implements Serializable {
         return SongID;
     }
 
-
+    public String getUName() {
+        return UName;
+    }
 }

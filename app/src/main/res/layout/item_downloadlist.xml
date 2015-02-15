@@ -1,22 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:padding="8dp"
+    android:layout_height="48dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/songname_textview"
-        android:text="Song name" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="process"
+        android:paddingRight="4dp"
         android:id="@+id/process_textview"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:textSize="12dp" />
+
+    <TextView
+        android:layout_toLeftOf="@id/process_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/songname_textview"
+        android:text="Song name"
+        android:textSize="12dp" />
 
     <ProgressBar
         android:id="@+id/process_progressbar"
