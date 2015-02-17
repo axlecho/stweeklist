@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -81,6 +83,8 @@ public class WeeklistActivity extends ActionBarActivity {
         @Override
         public void setSongName(String songName) {
             songNameTextView.setText(songName);
+            weeklistAdapter.setPlayedSongnName(songName);
+            weeklistAdapter.notifyDataSetChanged();
         }
 
         @Override
@@ -117,6 +121,7 @@ public class WeeklistActivity extends ActionBarActivity {
             ActionBar actionBar = this.getSupportActionBar();
             actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
             actionBar.setListNavigationCallbacks(adapter, new ActionBar.OnNavigationListener() {
+
                 @Override
                 public boolean onNavigationItemSelected(int itemPosition, long itemId) {
                     LogUtil.d(dateList.get(itemPosition));
@@ -161,7 +166,10 @@ public class WeeklistActivity extends ActionBarActivity {
             }
         });
         getWeeklistAsyncTask = new GetWeeklistAsyncTask();
-        getWeeklistAsyncTask.execute();
+        Intent intent = getIntent();
+        if (intent.getFlags() != Intent.FLAG_ACTIVITY_CLEAR_TOP) {
+            getWeeklistAsyncTask.execute();
+        }
 
         player.playBtn = (ImageButton) findViewById(R.id.play_pause_btn);
         player.nextBtn = (ImageButton) findViewById(R.id.next_btn);
@@ -295,7 +303,6 @@ public class WeeklistActivity extends ActionBarActivity {
             weeklistAdapter.upDateData(songInfoList);
             ((WkAppcation) getApplication()).setSongInfoList(songInfoList);
             playerService.updateSongList();
-
             weeklistAdapter.notifyDataSetChanged();
             super.onPostExecute(songInfoList);
         }
@@ -308,12 +315,16 @@ public class WeeklistActivity extends ActionBarActivity {
     }
 
     class WeeklistAdapter extends BaseAdapter {
-
+        private String playedSongnName = "";
         List<SongInfo> songInfoList = new ArrayList<>();
         Context context;
 
         public WeeklistAdapter(Context context) {
             this.context = context;
+        }
+
+        public void setPlayedSongnName(String playedSongnName) {
+            this.playedSongnName = playedSongnName;
         }
 
         @Override
@@ -337,6 +348,7 @@ public class WeeklistActivity extends ActionBarActivity {
             if (convertView == null) {
                 convertView = LayoutInflater.from(context).inflate(R.layout.item_weeklist, null);
                 holder = new ViewHolder();
+                holder.songItemLayout = convertView.findViewById(R.id.weeklist_item_layout);
                 holder.songname = (TextView) convertView.findViewById(R.id.weeklist_item_songname_textview);
                 holder.position = (TextView) convertView.findViewById(R.id.weeklist_item_position_textview);
                 holder.uploader = (TextView) convertView.findViewById(R.id.weeklist_item_uploader_textview);
@@ -359,9 +371,12 @@ public class WeeklistActivity extends ActionBarActivity {
 
             this.songInfoList = songInfoList;
         }
+
+
     }
 
     public static class ViewHolder {
+        public View songItemLayout;
         public TextView songname;
         public TextView position;
         public TextView uploader;

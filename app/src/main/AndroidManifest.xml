@@ -16,7 +16,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".WeeklistActivity"
-            android:label="@string/title_activity_weeklist">
+            android:label="@string/title_activity_weeklist"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
