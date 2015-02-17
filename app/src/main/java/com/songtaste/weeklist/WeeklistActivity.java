@@ -118,8 +118,10 @@ public class WeeklistActivity extends ActionBarActivity {
         try {
             final List<String> dateList = Api.getDateList();
             SpinnerAdapter adapter = new ArrayAdapter<String>(this, R.layout.item_datelist, dateList);
-            ActionBar actionBar = this.getSupportActionBar();
+            final ActionBar actionBar = this.getSupportActionBar();
             actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+
+
             actionBar.setListNavigationCallbacks(adapter, new ActionBar.OnNavigationListener() {
 
                 @Override
@@ -303,6 +305,7 @@ public class WeeklistActivity extends ActionBarActivity {
             weeklistAdapter.upDateData(songInfoList);
             ((WkAppcation) getApplication()).setSongInfoList(songInfoList);
             playerService.updateSongList();
+            weeklistListView.setSelection(0);
             weeklistAdapter.notifyDataSetChanged();
             super.onPostExecute(songInfoList);
         }
@@ -348,7 +351,6 @@ public class WeeklistActivity extends ActionBarActivity {
             if (convertView == null) {
                 convertView = LayoutInflater.from(context).inflate(R.layout.item_weeklist, null);
                 holder = new ViewHolder();
-                holder.songItemLayout = convertView.findViewById(R.id.weeklist_item_layout);
                 holder.songname = (TextView) convertView.findViewById(R.id.weeklist_item_songname_textview);
                 holder.position = (TextView) convertView.findViewById(R.id.weeklist_item_position_textview);
                 holder.uploader = (TextView) convertView.findViewById(R.id.weeklist_item_uploader_textview);
@@ -360,6 +362,12 @@ public class WeeklistActivity extends ActionBarActivity {
             holder.songname.setText(songInfoList.get(position).getSongName());
             holder.position.setText(String.valueOf(songInfoList.get(position).getIdx()));
             holder.uploader.setText(songInfoList.get(position).getUName());
+
+            if (playedSongnName.equals(songInfoList.get(position).getSongName())) {
+                convertView.setBackgroundColor(Color.parseColor("#cccccc"));
+            } else {
+                convertView.setBackgroundColor(Color.TRANSPARENT);
+            }
             return convertView;
         }
 
@@ -376,7 +384,6 @@ public class WeeklistActivity extends ActionBarActivity {
     }
 
     public static class ViewHolder {
-        public View songItemLayout;
         public TextView songname;
         public TextView position;
         public TextView uploader;
