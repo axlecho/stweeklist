@@ -95,7 +95,8 @@ public class DownloadActivity extends ActionBarActivity {
     private class DownloadAdapter extends BaseAdapter {
         Context context;
         List<DownloadJob> downloadJobList = new ArrayList<>();
-        List<DownloadJob> downloadedJobList = new ArrayList<>();
+        // TODO 分类别显示下载列表
+        // List<DownloadJob> downloadedJobList = new ArrayList<>();
 
         public DownloadAdapter(Context context) {
             this.context = context;
@@ -122,9 +123,9 @@ public class DownloadActivity extends ActionBarActivity {
             if (convertView == null) {
                 convertView = LayoutInflater.from(context).inflate(R.layout.item_downloadlist, null);
                 holder = new ViewHolder();
-                holder.songname = (TextView) convertView.findViewById(R.id.songname_textview);
-                holder.process = (TextView) convertView.findViewById(R.id.process_textview);
-                holder.progressBar = (ProgressBar) convertView.findViewById(R.id.process_progressbar);
+                holder.songname = (TextView) convertView.findViewById(R.id.download_songname_item_textview);
+                holder.process = (TextView) convertView.findViewById(R.id.download_progress_item_textview);
+                holder.progressBar = (ProgressBar) convertView.findViewById(R.id.download_progress_progressbar);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
@@ -146,7 +147,7 @@ public class DownloadActivity extends ActionBarActivity {
 
                 @Override
                 public void onDownloadFailed(String errorinfo) {
-                    Toast.makeText(DownloadActivity.this.getApplicationContext(), errorinfo, Toast.LENGTH_LONG);
+                    Toast.makeText(DownloadActivity.this.getApplicationContext(), errorinfo, Toast.LENGTH_LONG).show();
                 }
             });
 

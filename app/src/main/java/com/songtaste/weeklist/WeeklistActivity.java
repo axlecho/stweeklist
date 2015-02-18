@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -42,20 +41,18 @@ public class WeeklistActivity extends ActionBarActivity {
 
     protected ListView weeklistListView;
     protected WeeklistAdapter weeklistAdapter;
-
     private ServiceConnection playerServiceConnection;
     private PlayerService playerService;
-
     private ServiceConnection downloadServiceConnection;
     private DownloadService downloadService;
 
     private boolean deadflag = false;
 
     class Player implements com.songtaste.weeklist.PlayerInterface {
-        public ImageButton playBtn;
-        public ImageButton nextBtn;
+        private ImageButton playBtn;
+        private ImageButton nextBtn;
+        private TextView songNameTextView;
 
-        public TextView songNameTextView;
         private View.OnClickListener playListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,6 +69,9 @@ public class WeeklistActivity extends ActionBarActivity {
         };
 
         public void initBtn() {
+            playBtn = (ImageButton) findViewById(R.id.play_pause_btn);
+            nextBtn = (ImageButton) findViewById(R.id.next_btn);
+            songNameTextView = (TextView) findViewById(R.id.download_songname_item_textview);
             nextBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -107,14 +107,17 @@ public class WeeklistActivity extends ActionBarActivity {
     private Player player = new Player();
 
     private GetWeeklistAsyncTask getWeeklistAsyncTask;
+    private MenuItem progressMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weeklist);
+
         // 友盟自动更新
         UmengUpdateAgent.update(this);
 
+        // actionbar的初始化
         try {
             final List<String> dateList = Api.getDateList();
             SpinnerAdapter adapter = new ArrayAdapter<String>(this, R.layout.item_datelist, dateList);
@@ -134,6 +137,9 @@ public class WeeklistActivity extends ActionBarActivity {
 
                     getWeeklistAsyncTask = new GetWeeklistAsyncTask();
                     getWeeklistAsyncTask.execute(dateList.get(itemPosition));
+                    progressMenu.setActionView(R.layout.actionbar_indeterminate_progress);
+                    progressMenu.setVisible(true);
+//                    actionBar.setSelectedNavigationItem(itemPosition);
                     return false;
                 }
             });
@@ -141,6 +147,7 @@ public class WeeklistActivity extends ActionBarActivity {
             e.printStackTrace();
         }
 
+        // 周排行版列表初始化
         weeklistListView = (ListView) findViewById(R.id.weeklist_listview);
         weeklistAdapter = new WeeklistAdapter(this);
         weeklistListView.setAdapter(weeklistAdapter);
@@ -167,15 +174,8 @@ public class WeeklistActivity extends ActionBarActivity {
                 return true;
             }
         });
-        getWeeklistAsyncTask = new GetWeeklistAsyncTask();
-        Intent intent = getIntent();
-        if (intent.getFlags() != Intent.FLAG_ACTIVITY_CLEAR_TOP) {
-            getWeeklistAsyncTask.execute();
-        }
 
-        player.playBtn = (ImageButton) findViewById(R.id.play_pause_btn);
-        player.nextBtn = (ImageButton) findViewById(R.id.next_btn);
-        player.songNameTextView = (TextView) findViewById(R.id.songname_textview);
+        getWeeklistAsyncTask = new GetWeeklistAsyncTask();
         player.initBtn();
 
         playerServiceConnection = new ServiceConnection() {
@@ -262,6 +262,7 @@ public class WeeklistActivity extends ActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_weeklist, menu);
+        progressMenu = menu.findItem(R.id.refresh_loading);
         return true;
     }
 
@@ -298,7 +299,7 @@ public class WeeklistActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(List<SongInfo> songInfoList) {
             if (songInfoList == null) {
-                cancel(false);
+                cancel(true);
                 return;
             }
 
@@ -307,12 +308,18 @@ public class WeeklistActivity extends ActionBarActivity {
             playerService.updateSongList();
             weeklistListView.setSelection(0);
             weeklistAdapter.notifyDataSetChanged();
+
+            progressMenu.setVisible(false);
+            progressMenu.setActionView(null);
             super.onPostExecute(songInfoList);
         }
 
         @Override
         protected void onCancelled() {
             Toast.makeText(WeeklistActivity.this, Api.getError(), Toast.LENGTH_LONG).show();
+            LogUtil.e(Api.getError());
+            progressMenu.setVisible(false);
+            progressMenu.setActionView(null);
             super.onCancelled();
         }
     }

@@ -21,7 +21,9 @@ public class Api {
     public static List<String> getDateList() throws ParseException {
         List<String> dateList = new ArrayList<>();
         Calendar dNow = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf = (SimpleDateFormat) DateFormat.getDateInstance();
+        sdf.applyPattern("yyyy-MM-dd");
+
         Date endDate = sdf.parse(ServerConst.ENDDATESTRING);
         while (dNow.getTime().compareTo(endDate) > 0) {
             dateList.add(sdf.format(dNow.getTime()));
@@ -32,9 +34,9 @@ public class Api {
 
     public static List<SongInfo> getWeeklist() {
         Date dNow = new Date();
-        SimpleDateFormat df = (SimpleDateFormat) DateFormat.getDateInstance();
-        df.applyPattern("yyyy-MM-dd");
-        String date = df.format(dNow);
+        SimpleDateFormat sdf = (SimpleDateFormat) DateFormat.getDateInstance();
+        sdf.applyPattern("yyyy-MM-dd");
+        String date = sdf.format(dNow);
         LogUtil.d(date);
         return getWeeklist(date);
     }

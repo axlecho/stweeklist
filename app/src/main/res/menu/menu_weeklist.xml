@@ -12,4 +12,11 @@
         android:id="@+id/action_showdownload"
         android:title="下载"
         android:orderInCategory="100" />
+
+    <item
+        android:id="@+id/refresh_loading"
+        android:icon="@android:color/transparent"
+        app:showAsAction="always"
+        android:title="刷新" />
+
 </menu>

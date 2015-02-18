@@ -151,7 +151,7 @@ public class DownloadJob {
             }
 
 
-            return null;
+            return "download success";
         }
 
         @Override

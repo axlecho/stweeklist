@@ -241,7 +241,7 @@ public class PlayerService extends Service {
         @Override
         public void setSongName(String songName) {
             LogUtil.d(songName);
-            contentView.setTextViewText(R.id.songname_textview, songName);
+            contentView.setTextViewText(R.id.download_songname_item_textview, songName);
             notification.tickerText = songName;
             show();
         }
@@ -299,8 +299,8 @@ public class PlayerService extends Service {
             pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
             contentView.setOnClickPendingIntent(R.id.player_layout, pendingIntent);
 
-            contentView.setTextColor(R.id.songname_textview, Color.WHITE);
-            contentView.setTextViewText(R.id.songname_textview, "给跪了..这都被你看到");
+            contentView.setTextColor(R.id.download_songname_item_textview, Color.WHITE);
+            contentView.setTextViewText(R.id.download_songname_item_textview, "给跪了..这都被你看到");
             contentView.setImageViewResource(R.id.play_pause_btn, R.drawable.ic_pause);
             contentView.setImageViewResource(R.id.next_btn, R.drawable.ic_next);
         }

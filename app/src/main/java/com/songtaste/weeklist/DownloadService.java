@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
+import android.widget.Toast;
 
 import com.songtaste.weeklist.api.SongInfo;
 import com.songtaste.weeklist.utils.LogUtil;
@@ -77,10 +78,10 @@ public class DownloadService extends Service {
 
             @Override
             public void onDownloadFailed(String errorinfo) {
-                LogUtil.d("download error");
+                LogUtil.d(errorinfo);
+                Toast.makeText(DownloadService.this, errorinfo, Toast.LENGTH_LONG).show();
                 downloadJobList.remove(currentJob);
                 downloadnext();
-                LogUtil.d(errorinfo);
             }
         };
 

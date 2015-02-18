@@ -10,27 +10,28 @@
         android:layout_height="wrap_content"
         android:text="process"
         android:paddingRight="4dp"
-        android:id="@+id/process_textview"
+        android:paddingEnd="4dp"
+        android:id="@+id/download_progress_item_textview"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:textSize="12dp" />
 
     <TextView
-        android:layout_toLeftOf="@id/process_textview"
+        android:layout_toLeftOf="@id/download_progress_item_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/songname_textview"
+        android:id="@+id/download_songname_item_textview"
         android:text="Song name"
         android:textSize="12dp" />
 
     <ProgressBar
-        android:id="@+id/process_progressbar"
+        android:id="@+id/download_progress_progressbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="?android:attr/progressBarStyleHorizontal"
         android:max="100"
-        android:layout_below="@+id/songname_textview"
+        android:layout_below="@+id/download_songname_item_textview"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 </RelativeLayout>
