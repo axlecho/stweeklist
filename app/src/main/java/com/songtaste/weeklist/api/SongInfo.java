@@ -16,6 +16,9 @@ public class SongInfo implements Serializable {
     private int Width;          // ？？？
     private int LsnNum;         // 点赞数
 
+    private SongInfo() {
+    }
+
     /**
      * @param str 从服务器抓下的信息
      *            WL("1","3469833","Fade＜无限循环极品 这一刻 唤醒了2014所有的痛苦与极乐＞ ","稀罕谁 ","2", "5007036","稀罕谁","220","52");
@@ -36,6 +39,22 @@ public class SongInfo implements Serializable {
         return songInfo;
     }
 
+
+    public static SongInfo buildFromLocalFileName(String str) {
+        String UNKNOWN = "unknown";
+        SongInfo songInfo = new SongInfo();
+        songInfo.Idx = -1;
+        songInfo.SongID = -1;
+        songInfo.SongName = str;
+        songInfo.Singer = UNKNOWN;
+        songInfo.Sex = -1;
+        songInfo.UID = -1;
+        songInfo.UName = UNKNOWN;
+        songInfo.Width = -1;
+        songInfo.LsnNum = -1;
+        return songInfo;
+    }
+
     @Override
     public String toString() {
         return "[Idx:" + Idx + " SongID:" + SongID + " SongName:" + SongName + " Singer:" + Singer
@@ -47,8 +66,12 @@ public class SongInfo implements Serializable {
         return Idx;
     }
 
-    public String getSongName() {
+    public String getSongPath() {
         return SongName;
+    }
+
+    public String getSongName() {
+        return SongName.substring(SongName.lastIndexOf("/") + 1, SongName.lastIndexOf("."));
     }
 
     public int getSongID() {

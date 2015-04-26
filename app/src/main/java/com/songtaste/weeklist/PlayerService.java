@@ -1,21 +1,16 @@
 package com.songtaste.weeklist;
 
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
-import android.widget.RemoteViews;
 
 import com.songtaste.weeklist.api.Api;
 import com.songtaste.weeklist.api.SongInfo;
+import com.songtaste.weeklist.utils.LocalFileUtil;
 import com.songtaste.weeklist.utils.LogUtil;
 
 import java.io.IOException;
@@ -23,13 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerService extends Service {
-
-    List<SongInfo> songInfoList;
-    List<PlayerInterface> playerList = new ArrayList<>();
-
-    private MediaPlayer mp = new MediaPlayer();
-    private int curIndex = 0;
-
     public static final String ACTION_PLAY = "action_play";
     public static final String ACTION_PAUSE = "action_pause";
     public static final String ACTION_REWIND = "action_rewind";
@@ -38,10 +26,34 @@ public class PlayerService extends Service {
     public static final String ACTION_PREVIOUS = "action_previous";
     public static final String ACTION_STOP = "action_stop";
 
-    private boolean state = true;
+    public enum PlayMode {
+        LIST_REPEATED, LIST_ONCE, ONE_REPEATED;
+
+        public static PlayMode nextMode(PlayMode playMode) {
+            PlayMode nextPlayMode = playMode;
+            switch (playMode) {
+                case LIST_ONCE:
+                    nextPlayMode = ONE_REPEATED;
+                    break;
+                case LIST_REPEATED:
+                    nextPlayMode = LIST_ONCE;
+                    break;
+                case ONE_REPEATED:
+                    nextPlayMode = LIST_REPEATED;
+                    break;
+            }
+            return nextPlayMode;
+        }
+    }
+
+    private List<SongInfo> songInfoList;
+
+    private MediaPlayer mp = new MediaPlayer();
+    private int curIndex = 0;
+    private PlayMode playmode = PlayMode.LIST_REPEATED;
 
     PlayMp3AsyncTask playMp3AsyncTask;
-    NotificationPlayerInterface notificationPlayer;
+
 
     @Override
     public void onCreate() {
@@ -49,10 +61,10 @@ public class PlayerService extends Service {
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                next();
+                nextWithPlayMode();
             }
         });
-        notificationPlayer = new NotificationPlayerInterface();
+        notificationPlayer = new NotificationPlayer(this);
         super.onCreate();
     }
 
@@ -73,19 +85,6 @@ public class PlayerService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void handleIntent(Intent intent) {
-        if (intent != null && intent.getAction() != null) {
-            if (intent.getAction().equalsIgnoreCase(ACTION_PLAY)) {
-                play();
-            } else if (intent.getAction().equalsIgnoreCase(ACTION_PAUSE)) {
-                pause();
-            } else if (intent.getAction().equalsIgnoreCase(ACTION_PREVIOUS)) {
-                previous();
-            } else if (intent.getAction().equalsIgnoreCase(ACTION_NEXT)) {
-                next();
-            }
-        }
-    }
 
     public void play() {
         if (!mp.isPlaying()) {
@@ -120,53 +119,89 @@ public class PlayerService extends Service {
         }
     }
 
-    public void next() {
-        curIndex++;
-        if (curIndex >= songInfoList.size()) {
-            curIndex = 0;
-        }
-
-        pause();
-        for (PlayerInterface player : playerList) {
-            player.setSongName(songInfoList.get(curIndex).getSongName());
-        }
-        if (playMp3AsyncTask != null && playMp3AsyncTask.getStatus() != AsyncTask.Status.FINISHED) {
-            playMp3AsyncTask.cancel(false);
-            LogUtil.d("playMp3AsyncTask is canceled");
-        }
-        playMp3AsyncTask = new PlayMp3AsyncTask();
-        playMp3AsyncTask.execute(songInfoList.get(curIndex).getSongID());
-    }
-
     public void previous() {
         curIndex--;
         if (curIndex < 0) {
             curIndex = songInfoList.size() - 1;
         }
         pause();
-        for (PlayerInterface player : playerList) {
-            player.setSongName(songInfoList.get(curIndex).getSongName());
-        }
+        setLyric();
+        reset();
+    }
 
-        if (playMp3AsyncTask != null && playMp3AsyncTask.getStatus() != AsyncTask.Status.FINISHED) {
-            playMp3AsyncTask.cancel(false);
-            LogUtil.d("playMp3AsyncTask is canceled");
+    public void next() {
+        curIndex++;
+        if (curIndex >= songInfoList.size()) {
+            curIndex = 0;
         }
-        playMp3AsyncTask = new PlayMp3AsyncTask();
-        playMp3AsyncTask.execute(songInfoList.get(curIndex).getSongID());
+        pause();
+        setLyric();
+        reset();
+    }
+
+    private void nextWithPlayMode() {
+        switch (playmode) {
+            case LIST_REPEATED:
+                next();
+                break;
+            case LIST_ONCE:
+                if (curIndex == playerList.size() - 1) return;
+                next();
+                break;
+            case ONE_REPEATED:
+                playSongIndex(curIndex);
+                break;
+        }
     }
 
     public void playSongIndex(int position) {
-        LogUtil.d("play:" + position + " " + songInfoList.get(position).getSongName());
+        LogUtil.d("play:" + position + " " + songInfoList.get(position).getSongPath());
         if (position > songInfoList.size()) {
             return;
         }
         curIndex = position;
         pause();
+        setLyric();
+        reset();
+    }
+
+    public void setPlayMode(PlayMode playmode) {
+        this.playmode = playmode;
+    }
+
+    public PlayMode getPlaymode() {
+        return playmode;
+    }
+
+    private void setLyric() {
         for (PlayerInterface player : playerList) {
             player.setSongName(songInfoList.get(curIndex).getSongName());
+            String IyricString = LocalFileUtil.getLyric(songInfoList.get(curIndex).getSongPath());
+            player.setLyric(IyricString);
         }
+    }
 
+    private void reset() {
+        if (songInfoList.get(curIndex).getIdx() == -1) {
+            String mp3Url = songInfoList.get(curIndex).getSongPath();
+            try {
+                if (mp3Url == null) {
+                    return;
+                }
+                LogUtil.d(mp3Url);
+                mp.reset();
+                mp.setDataSource(mp3Url);
+                mp.prepare();
+                play();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            startPlayMp3AsyncTask();
+        }
+    }
+
+    private void startPlayMp3AsyncTask() {
         if (playMp3AsyncTask != null && playMp3AsyncTask.getStatus() != AsyncTask.Status.FINISHED) {
             playMp3AsyncTask.cancel(false);
             LogUtil.d("playMp3AsyncTask is canceled");
@@ -177,13 +212,17 @@ public class PlayerService extends Service {
 
     public void updateSongList() {
         songInfoList = ((WkAppcation) this.getApplication()).getSongInfoList();
+        if (songInfoList.size() == 0) {
+            return;
+        }
+
         curIndex = 0;
         if (!mp.isPlaying()) {
-            for (PlayerInterface player : playerList) {
-                player.setSongName(songInfoList.get(curIndex).getSongName());
-            }
+            setLyric();
         }
     }
+
+    private NotificationPlayer notificationPlayer;
 
     public void hideNotification() {
         notificationPlayer.hide();
@@ -195,15 +234,22 @@ public class PlayerService extends Service {
         addPlayer(notificationPlayer);
     }
 
-    @Override
-    public void onDestroy() {
-        if (mp != null) {
-            mp.stop();
-            mp.release();
+
+    private void handleIntent(Intent intent) {
+        if (intent != null && intent.getAction() != null) {
+            if (intent.getAction().equalsIgnoreCase(ACTION_PLAY)) {
+                play();
+            } else if (intent.getAction().equalsIgnoreCase(ACTION_PAUSE)) {
+                pause();
+            } else if (intent.getAction().equalsIgnoreCase(ACTION_PREVIOUS)) {
+                previous();
+            } else if (intent.getAction().equalsIgnoreCase(ACTION_NEXT)) {
+                next();
+            }
         }
     }
 
-    class PlayMp3AsyncTask extends AsyncTask<Integer, Void, String> {
+    private class PlayMp3AsyncTask extends AsyncTask<Integer, Void, String> {
         @Override
         protected String doInBackground(Integer... params) {
             int id = params[0];
@@ -228,83 +274,7 @@ public class PlayerService extends Service {
         }
     }
 
-    class NotificationPlayerInterface implements PlayerInterface {
-        private static final int NOTIFY_ID = 1;
-        private NotificationManager notificationManager;
-        private Notification notification;
-        private RemoteViews contentView;
-
-        public NotificationPlayerInterface() {
-            init();
-        }
-
-        @Override
-        public void setSongName(String songName) {
-            LogUtil.d(songName);
-            contentView.setTextViewText(R.id.download_songname_item_textview, songName);
-            notification.tickerText = songName;
-            show();
-        }
-
-        @Override
-        public void setPlayStatus(int status) {
-            if (status == PlayerInterface.PLAY_STATUS) {
-                contentView.setImageViewResource(R.id.play_pause_btn, R.drawable.ic_pause);
-                Intent intent = new Intent(getApplicationContext(), PlayerService.class);
-                intent.setAction(ACTION_PLAY);
-                PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
-                contentView.setOnClickPendingIntent(R.id.play_pause_btn, pendingIntent);
-            } else if (status == PlayerInterface.PAUSE_STATUS) {
-                contentView.setImageViewResource(R.id.play_pause_btn, R.drawable.ic_play);
-                Intent intent = new Intent(getApplicationContext(), PlayerService.class);
-                intent.setAction(ACTION_PAUSE);
-                PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
-                contentView.setOnClickPendingIntent(R.id.play_pause_btn, pendingIntent);
-            }
-            show();
-        }
-
-        @Override
-        public void setProgress(int progress) {
-
-        }
-
-        public void show() {
-            notificationManager.notify(NOTIFY_ID, notification);
-        }
-
-        public void hide() {
-            notificationManager.cancel(NOTIFY_ID);
-        }
-
-        public void init() {
-            notificationManager = (NotificationManager) PlayerService.this.getSystemService(Context.NOTIFICATION_SERVICE);
-            CharSequence tickerText = "st player";
-            long when = System.currentTimeMillis();
-            notification = new Notification(R.drawable.ic_launcher, tickerText, when);
-
-            // 放置在"正在运行"栏目中
-            notification.flags = Notification.FLAG_ONGOING_EVENT;
-
-            contentView = new RemoteViews(PlayerService.this.getPackageName(), R.layout.layout_player);
-            // 指定个性化视图
-            notification.contentView = contentView;
-
-            Intent intent = new Intent(getApplicationContext(), PlayerService.class);
-            intent.setAction(ACTION_NEXT);
-            PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
-            contentView.setOnClickPendingIntent(R.id.next_btn, pendingIntent);
-
-            intent = new Intent(getApplicationContext(), WeeklistActivity.class);
-            pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
-            contentView.setOnClickPendingIntent(R.id.player_layout, pendingIntent);
-
-            contentView.setTextColor(R.id.download_songname_item_textview, Color.WHITE);
-            contentView.setTextViewText(R.id.download_songname_item_textview, "给跪了..这都被你看到");
-            contentView.setImageViewResource(R.id.play_pause_btn, R.drawable.ic_pause);
-            contentView.setImageViewResource(R.id.next_btn, R.drawable.ic_next);
-        }
-    }
+    private List<PlayerInterface> playerList = new ArrayList<>();
 
     public void addPlayer(PlayerInterface player) {
         //TODO 添加播放器状态
@@ -313,8 +283,10 @@ public class PlayerService extends Service {
         } else {
             player.setPlayStatus(PlayerInterface.PAUSE_STATUS);
         }
-        if (songInfoList != null) {
+        if (songInfoList != null && songInfoList.size() != 0) {
             player.setSongName(songInfoList.get(curIndex).getSongName());
+            String IyricString = new LocalFileUtil().getLyric(songInfoList.get(curIndex).getSongPath());
+            player.setLyric(IyricString);
         }
         playerList.add(player);
     }
@@ -322,4 +294,13 @@ public class PlayerService extends Service {
     public void removePlayer(PlayerInterface player) {
         playerList.remove(player);
     }
+
+    @Override
+    public void onDestroy() {
+        if (mp != null) {
+            mp.stop();
+            mp.release();
+        }
+    }
+
 }

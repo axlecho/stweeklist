@@ -24,15 +24,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".DownloadActivity"
             android:label="@string/title_activity_download" />
-
+        <activity
+            android:name=".LocalActivity"
+            android:allowEmbedded="@string/title_activity_local" />
         <activity
             android:name=".DownloadServiceTestActivity"
             android:label="@string/title_activity_fortest" />
-
         <activity
             android:name=".TestActivity"
             android:label="@string/title_activity_fortest" />
@@ -41,29 +41,15 @@
             android:name=".PlayerService"
             android:enabled="true"
             android:exported="true" />
-
         <service
             android:name=".DownloadService"
             android:enabled="true"
             android:exported="true" />
 
-        <!-- 友盟的组件 -->
-        <service
-            android:name="com.umeng.update.net.DownloadingService"
-            android:process=":DownloadingService" />
-
         <activity
-            android:name="com.umeng.update.UpdateDialogActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-
-        <meta-data
-            android:name="UMENG_APPKEY"
-            android:value="54dac602fd98c59a520009e4" />
-
-        <meta-data
-            android:name="UMENG_CHANNEL"
-            android:value="jasmine" />
-
+            android:name=".AddMusicDirActivity"
+            android:label="@string/title_activity_add_music_dir"
+            android:theme="@android:style/Theme.Dialog" />
     </application>
 
 </manifest>

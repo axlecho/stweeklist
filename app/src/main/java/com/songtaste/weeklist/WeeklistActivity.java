@@ -6,21 +6,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SpinnerAdapter;
@@ -30,11 +26,8 @@ import android.widget.Toast;
 import com.songtaste.weeklist.api.Api;
 import com.songtaste.weeklist.api.SongInfo;
 import com.songtaste.weeklist.utils.LogUtil;
-import com.umeng.analytics.MobclickAgent;
-import com.umeng.update.UmengUpdateAgent;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class WeeklistActivity extends ActionBarActivity {
@@ -102,6 +95,11 @@ public class WeeklistActivity extends ActionBarActivity {
         public void setProgress(int progress) {
 
         }
+
+        @Override
+        public void setLyric(String lyric) {
+
+        }
     }
 
     private Player player = new Player();
@@ -113,9 +111,6 @@ public class WeeklistActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weeklist);
-
-        // 友盟自动更新
-        UmengUpdateAgent.update(this);
 
         // actionbar的初始化
         try {
@@ -162,7 +157,7 @@ public class WeeklistActivity extends ActionBarActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 final SongInfo si = weeklistAdapter.getItem(position);
-                new AlertDialog.Builder(WeeklistActivity.this).setMessage("下载:" + si.getSongName())
+                new AlertDialog.Builder(WeeklistActivity.this).setMessage("下载:" + si.getSongPath())
                         .setPositiveButton("确认", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -243,7 +238,6 @@ public class WeeklistActivity extends ActionBarActivity {
     @Override
     public void onResume() {
         super.onResume();
-        MobclickAgent.onResume(this);
         if (playerService != null) {
             playerService.hideNotification();
         }
@@ -252,7 +246,6 @@ public class WeeklistActivity extends ActionBarActivity {
     @Override
     public void onPause() {
         super.onPause();
-        MobclickAgent.onPause(this);
         if (playerService != null) {
             playerService.showNotification();
         }
@@ -279,6 +272,11 @@ public class WeeklistActivity extends ActionBarActivity {
         } else if (id == R.id.action_showdownload) {
             Intent intent = new Intent();
             intent.setClass(this, DownloadActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.action_loacal) {
+            Intent intent = new Intent();
+            intent.setClass(this, LocalActivity.class);
+            getWeeklistAsyncTask.cancel(true);
             startActivity(intent);
         }
 
@@ -322,78 +320,6 @@ public class WeeklistActivity extends ActionBarActivity {
             progressMenu.setActionView(null);
             super.onCancelled();
         }
-    }
-
-    class WeeklistAdapter extends BaseAdapter {
-        private String playedSongnName = "";
-        List<SongInfo> songInfoList = new ArrayList<>();
-        Context context;
-
-        public WeeklistAdapter(Context context) {
-            this.context = context;
-        }
-
-        public void setPlayedSongnName(String playedSongnName) {
-            this.playedSongnName = playedSongnName;
-        }
-
-        @Override
-        public int getCount() {
-            return songInfoList.size();
-        }
-
-        @Override
-        public SongInfo getItem(int position) {
-            return songInfoList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder = null;
-            if (convertView == null) {
-                convertView = LayoutInflater.from(context).inflate(R.layout.item_weeklist, null);
-                holder = new ViewHolder();
-                holder.songname = (TextView) convertView.findViewById(R.id.weeklist_item_songname_textview);
-                holder.position = (TextView) convertView.findViewById(R.id.weeklist_item_position_textview);
-                holder.uploader = (TextView) convertView.findViewById(R.id.weeklist_item_uploader_textview);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-
-            holder.songname.setText(songInfoList.get(position).getSongName());
-            holder.position.setText(String.valueOf(songInfoList.get(position).getIdx()));
-            holder.uploader.setText(songInfoList.get(position).getUName());
-
-            if (playedSongnName.equals(songInfoList.get(position).getSongName())) {
-                convertView.setBackgroundColor(Color.parseColor("#cccccc"));
-            } else {
-                convertView.setBackgroundColor(Color.TRANSPARENT);
-            }
-            return convertView;
-        }
-
-        public void upDateData(List<SongInfo> songInfoList) {
-            if (songInfoList == null) {
-                songInfoList.clear();
-                return;
-            }
-
-            this.songInfoList = songInfoList;
-        }
-
-
-    }
-
-    public static class ViewHolder {
-        public TextView songname;
-        public TextView position;
-        public TextView uploader;
     }
 
     @Override

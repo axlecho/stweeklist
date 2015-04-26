@@ -55,5 +55,13 @@
             android:scaleType="centerInside"
             android:layout_weight="1"
             android:background="@android:color/transparent" />
+
+
     </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:id="@+id/playmode_btn"
+        android:text="@string/playmode_listrepeated" />
 </LinearLayout>

@@ -27,7 +27,7 @@ public class ParseTest extends AndroidTestCase {
         Assert.assertEquals(50, SongList.size());
         SongInfo si = SongList.get(19); // 第20首歌
         Assert.assertEquals(20, si.getIdx());
-        Assert.assertEquals("不要说爱我 ", si.getSongName());
+        Assert.assertEquals("不要说爱我 ", si.getSongPath());
         LogUtil.d(si.toString());
     }
 

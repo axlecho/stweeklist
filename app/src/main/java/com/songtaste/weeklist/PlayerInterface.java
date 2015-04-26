@@ -13,4 +13,6 @@ public interface PlayerInterface {
     public void setPlayStatus(int status);
 
     public void setProgress(int progress);
+
+    public void setLyric(String lyric);
 }

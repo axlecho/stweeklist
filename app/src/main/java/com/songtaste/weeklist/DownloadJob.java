@@ -53,7 +53,7 @@ public class DownloadJob {
         dirPath = SDcardPath + File.separator
                 + context.getResources().getString(R.string.app_name)
                 + File.separator + ServerConst.FILEDIR;
-        filePath = dirPath + File.separator + songInfo.getSongName() + ".mp3";
+        filePath = dirPath + File.separator + songInfo.getSongPath() + ".mp3";
         LogUtil.d(filePath);
     }
 
@@ -98,7 +98,7 @@ public class DownloadJob {
             try {
                 File mp3File = new File(filePath);
                 if (mp3File.exists()) {
-                    errorInfo = songInfo.getSongName() + " is exists";
+                    errorInfo = songInfo.getSongPath() + " is exists";
                     LogUtil.d(errorInfo);
                     cancel(true);
                     return errorInfo;
@@ -109,7 +109,7 @@ public class DownloadJob {
             } catch (IOException e) {
                 e.printStackTrace();
                 cancel(true);
-                return songInfo.getSongName() + " create failed";
+                return songInfo.getSongPath() + " create failed";
             }
 
             try {
