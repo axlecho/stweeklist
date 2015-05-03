@@ -18,7 +18,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.songtaste.weeklist.api.SongInfo;
+import com.songtaste.weeklist.api.TrackInfo;
 import com.songtaste.weeklist.utils.LogUtil;
 
 import java.util.ArrayList;
@@ -141,7 +141,7 @@ public class DownloadActivity extends ActionBarActivity {
                 }
 
                 @Override
-                public void onDownloadComplete(SongInfo songInfo) {
+                public void onDownloadComplete(TrackInfo trackInfo) {
                     DownloadAdapter.this.notifyDataSetChanged();
                 }
 
@@ -151,8 +151,8 @@ public class DownloadActivity extends ActionBarActivity {
                 }
             });
 
-            SongInfo si = dj.getSongInfo();
-            holder.songname.setText(si.getSongName());
+            TrackInfo ti = dj.getTrackInfo();
+            holder.songname.setText(ti.getTrackName());
             holder.process.setText(String.valueOf(dj.getProcess()) + "%");
             holder.progressBar.setProgress(dj.getProcess());
             return convertView;

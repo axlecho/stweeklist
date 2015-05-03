@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Created by axlecho on 2015/2/9.
  */
-public class Api {
+public class STWeeklistApi {
 
     private static String errorString;
 
@@ -32,7 +32,7 @@ public class Api {
         return dateList;
     }
 
-    public static List<SongInfo> getWeeklist() {
+    public static List<StTrackInfo> getWeeklist() {
         Date dNow = new Date();
         SimpleDateFormat sdf = (SimpleDateFormat) DateFormat.getDateInstance();
         sdf.applyPattern("yyyy-MM-dd");
@@ -41,23 +41,23 @@ public class Api {
         return getWeeklist(date);
     }
 
-    public static List<SongInfo> getWeeklist(String date) {
+    public static List<StTrackInfo> getWeeklist(String date) {
         String url = String.format(ServerConst.WEEKLIST, date);
         String htmlDocument = NetworkUtil.getInstance().get(url);
         if (htmlDocument == null) {
             return null;
         }
 
-        List<SongInfo> songInfoList = new ArrayList<>();
+        List<StTrackInfo> stTrackInfoList = new ArrayList<>();
         for (String line : htmlDocument.split("\n")) {
             if (line.matches("^WL.*")) {
-                SongInfo si = SongInfo.buildFromString(line);
-                songInfoList.add(si);
+                StTrackInfo si = StTrackInfo.buildFromString(line);
+                stTrackInfoList.add(si);
                 LogUtil.i(line);
             }
         }
 
-        return songInfoList;
+        return stTrackInfoList;
     }
 
     public static String getMp3Url(int id) {

@@ -23,8 +23,9 @@ import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.songtaste.weeklist.api.Api;
-import com.songtaste.weeklist.api.SongInfo;
+import com.songtaste.weeklist.api.STWeeklistApi;
+import com.songtaste.weeklist.api.StTrackInfo;
+import com.songtaste.weeklist.api.TrackInfo;
 import com.songtaste.weeklist.utils.LogUtil;
 
 import java.text.ParseException;
@@ -33,7 +34,7 @@ import java.util.List;
 public class WeeklistActivity extends ActionBarActivity {
 
     protected ListView weeklistListView;
-    protected WeeklistAdapter weeklistAdapter;
+    protected TracklistAdapter weeklistAdapter;
     private ServiceConnection playerServiceConnection;
     private PlayerService playerService;
     private ServiceConnection downloadServiceConnection;
@@ -114,7 +115,7 @@ public class WeeklistActivity extends ActionBarActivity {
 
         // actionbar的初始化
         try {
-            final List<String> dateList = Api.getDateList();
+            final List<String> dateList = STWeeklistApi.getDateList();
             SpinnerAdapter adapter = new ArrayAdapter<String>(this, R.layout.item_datelist, dateList);
             final ActionBar actionBar = this.getSupportActionBar();
             actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
@@ -144,7 +145,7 @@ public class WeeklistActivity extends ActionBarActivity {
 
         // 周排行版列表初始化
         weeklistListView = (ListView) findViewById(R.id.weeklist_listview);
-        weeklistAdapter = new WeeklistAdapter(this);
+        weeklistAdapter = new TracklistAdapter(this);
         weeklistListView.setAdapter(weeklistAdapter);
         weeklistListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -156,12 +157,12 @@ public class WeeklistActivity extends ActionBarActivity {
         weeklistListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                final SongInfo si = weeklistAdapter.getItem(position);
-                new AlertDialog.Builder(WeeklistActivity.this).setMessage("下载:" + si.getSongPath())
+                final TrackInfo ti = weeklistAdapter.getItem(position);
+                new AlertDialog.Builder(WeeklistActivity.this).setMessage("下载:" + ti.getTrackName())
                         .setPositiveButton("确认", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                downloadService.addToDownloadList(si);
+                                downloadService.addToDownloadList(ti);
                                 downloadService.startDownload();
                                 dialog.dismiss();
                             }
@@ -283,39 +284,39 @@ public class WeeklistActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    class GetWeeklistAsyncTask extends AsyncTask<String, Void, List<SongInfo>> {
+    class GetWeeklistAsyncTask extends AsyncTask<String, Void, List<StTrackInfo>> {
 
         @Override
-        protected List<SongInfo> doInBackground(String... params) {
+        protected List<StTrackInfo> doInBackground(String... params) {
             String dateString = null;
             if (params.length != 0) {
                 dateString = params[0];
             }
-            return dateString == null ? Api.getWeeklist() : Api.getWeeklist(dateString);
+            return dateString == null ? STWeeklistApi.getWeeklist() : STWeeklistApi.getWeeklist(dateString);
         }
 
         @Override
-        protected void onPostExecute(List<SongInfo> songInfoList) {
-            if (songInfoList == null) {
+        protected void onPostExecute(List<StTrackInfo> stTrackInfoList) {
+            if (stTrackInfoList == null) {
                 cancel(true);
                 return;
             }
 
-            weeklistAdapter.upDateData(songInfoList);
-            ((WkAppcation) getApplication()).setSongInfoList(songInfoList);
+            weeklistAdapter.upDateData(stTrackInfoList);
+            ((WkAppcation) getApplication()).setTrackInfoList(stTrackInfoList);
             playerService.updateSongList();
             weeklistListView.setSelection(0);
             weeklistAdapter.notifyDataSetChanged();
 
             progressMenu.setVisible(false);
             progressMenu.setActionView(null);
-            super.onPostExecute(songInfoList);
+            super.onPostExecute(stTrackInfoList);
         }
 
         @Override
         protected void onCancelled() {
-            Toast.makeText(WeeklistActivity.this, Api.getError(), Toast.LENGTH_LONG).show();
-            LogUtil.e(Api.getError());
+            Toast.makeText(WeeklistActivity.this, STWeeklistApi.getError(), Toast.LENGTH_LONG).show();
+            LogUtil.e(STWeeklistApi.getError());
             progressMenu.setVisible(false);
             progressMenu.setActionView(null);
             super.onCancelled();

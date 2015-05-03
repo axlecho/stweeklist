@@ -8,17 +8,18 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.songtaste.weeklist.api.SongInfo;
+import com.songtaste.weeklist.api.StTrackInfo;
+import com.songtaste.weeklist.api.TrackInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class WeeklistAdapter extends BaseAdapter {
+class TracklistAdapter extends BaseAdapter {
     private String playedSongnName = "";
-    List<SongInfo> songInfoList = new ArrayList<>();
+    List<? extends TrackInfo> trackInfoList = new ArrayList<>();
     Context context;
 
-    public WeeklistAdapter(Context context) {
+    public TracklistAdapter(Context context) {
         this.context = context;
     }
 
@@ -28,12 +29,12 @@ class WeeklistAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return songInfoList.size();
+        return trackInfoList.size();
     }
 
     @Override
-    public SongInfo getItem(int position) {
-        return songInfoList.get(position);
+    public TrackInfo getItem(int position) {
+        return trackInfoList.get(position);
     }
 
     @Override
@@ -56,11 +57,11 @@ class WeeklistAdapter extends BaseAdapter {
         }
 
 
-        holder.songname.setText(songInfoList.get(position).getSongName());
+        holder.songname.setText(trackInfoList.get(position).getTrackName());
         holder.position.setText("" + position);
-        holder.uploader.setText(songInfoList.get(position).getUName());
+        holder.uploader.setText(trackInfoList.get(position).getDescribe());
 
-        if (playedSongnName.equals(songInfoList.get(position).getSongPath())) {
+        if (playedSongnName.equals(trackInfoList.get(position).getUrl())) {
             convertView.setBackgroundColor(Color.parseColor("#cccccc"));
         } else {
             convertView.setBackgroundColor(Color.TRANSPARENT);
@@ -68,13 +69,13 @@ class WeeklistAdapter extends BaseAdapter {
         return convertView;
     }
 
-    public void upDateData(List<SongInfo> songInfoList) {
-        if (songInfoList == null) {
-            songInfoList.clear();
+    public void upDateData(List<? extends TrackInfo> trackInfoList) {
+        if (trackInfoList == null) {
+            trackInfoList.clear();
             return;
         }
 
-        this.songInfoList = songInfoList;
+        this.trackInfoList = trackInfoList;
     }
 
     public static class ViewHolder {

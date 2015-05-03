@@ -4,9 +4,10 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
 
-import com.songtaste.weeklist.api.Api;
+import com.songtaste.weeklist.api.STWeeklistApi;
 import com.songtaste.weeklist.api.ServerConst;
-import com.songtaste.weeklist.api.SongInfo;
+import com.songtaste.weeklist.api.StTrackInfo;
+import com.songtaste.weeklist.api.TrackInfo;
 import com.songtaste.weeklist.utils.LogUtil;
 
 import java.io.File;
@@ -25,7 +26,7 @@ import java.util.List;
 public class DownloadJob {
 
     private Context context;
-    private SongInfo songInfo;
+    private TrackInfo trackInfo;
     private String mp3UrlString;
     private String dirPath;
     private String filePath;
@@ -35,9 +36,9 @@ public class DownloadJob {
 
     private List<OnDownloadListener> onDownloadListenerList = new ArrayList<>();
 
-    public DownloadJob(Context context, SongInfo songInfo) {
+    public DownloadJob(Context context, TrackInfo trackInfo) {
         this.context = context;
-        this.songInfo = songInfo;
+        this.trackInfo = trackInfo;
         setDownLoadPostion();
     }
 
@@ -53,7 +54,7 @@ public class DownloadJob {
         dirPath = SDcardPath + File.separator
                 + context.getResources().getString(R.string.app_name)
                 + File.separator + ServerConst.FILEDIR;
-        filePath = dirPath + File.separator + songInfo.getSongPath() + ".mp3";
+        filePath = dirPath + File.separator + trackInfo.getTrackName() + ".mp3";
         LogUtil.d(filePath);
     }
 
@@ -70,7 +71,7 @@ public class DownloadJob {
     public interface OnDownloadListener {
         public void onProgressUpdate(Integer process);
 
-        public void onDownloadComplete(SongInfo songInfo);
+        public void onDownloadComplete(TrackInfo trackInfo);
 
         public void onDownloadFailed(String errorinfo);
     }
@@ -89,7 +90,8 @@ public class DownloadJob {
         protected String doInBackground(Void... params) {
             OutputStream output;
             InputStream input;
-            mp3UrlString = Api.getMp3Url(songInfo.getSongID());
+
+            // mp3UrlString = STWeeklistApi.getMp3Url(trackInfo.getSongID());
             if (mp3UrlString.equals("")) {
                 cancel(true);
                 return "get Mp3url failed";
@@ -98,7 +100,7 @@ public class DownloadJob {
             try {
                 File mp3File = new File(filePath);
                 if (mp3File.exists()) {
-                    errorInfo = songInfo.getSongPath() + " is exists";
+                    errorInfo = trackInfo.getTrackName() + " is exists";
                     LogUtil.d(errorInfo);
                     cancel(true);
                     return errorInfo;
@@ -109,7 +111,7 @@ public class DownloadJob {
             } catch (IOException e) {
                 e.printStackTrace();
                 cancel(true);
-                return songInfo.getSongPath() + " create failed";
+                return trackInfo.getTrackName() + " create failed";
             }
 
             try {
@@ -158,7 +160,7 @@ public class DownloadJob {
         protected void onPostExecute(String aVoid) {
             LogUtil.d("download complete");
             for (OnDownloadListener listener : onDownloadListenerList) {
-                listener.onDownloadComplete(songInfo);
+                listener.onDownloadComplete(trackInfo);
             }
             super.onPostExecute(aVoid);
         }
@@ -177,8 +179,8 @@ public class DownloadJob {
         return totalSize;
     }
 
-    public SongInfo getSongInfo() {
-        return songInfo;
+    public TrackInfo getTrackInfo() {
+        return trackInfo;
     }
 
 

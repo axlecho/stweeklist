@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
-import com.songtaste.weeklist.api.Api;
-import com.songtaste.weeklist.api.SongInfo;
+import com.songtaste.weeklist.api.STWeeklistApi;
+import com.songtaste.weeklist.api.StTrackInfo;
 import com.songtaste.weeklist.utils.LogUtil;
 
 
@@ -20,8 +20,8 @@ public class TestActivity extends Activity {
         }
 
         @Override
-        public void onDownloadComplete(SongInfo songInfo) {
-            LogUtil.d(songInfo);
+        public void onDownloadComplete(StTrackInfo stTrackInfo) {
+            LogUtil.d(stTrackInfo);
             TestActivity.this.notify();
         }
 
@@ -38,7 +38,7 @@ public class TestActivity extends Activity {
 
             @Override
             protected Void doInBackground(Void... params) {
-                dj = new DownloadJob(TestActivity.this, Api.getWeeklist("2009-09-28").get(19));
+                dj = new DownloadJob(TestActivity.this, STWeeklistApi.getWeeklist("2009-09-28").get(19));
                 dj.addDownloadListener(listener);
                 dj.start();
                 return null;

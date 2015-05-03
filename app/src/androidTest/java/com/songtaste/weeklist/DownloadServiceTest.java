@@ -3,8 +3,8 @@ package com.songtaste.weeklist;
 import android.content.Intent;
 import android.test.ServiceTestCase;
 
-import com.songtaste.weeklist.api.Api;
-import com.songtaste.weeklist.api.SongInfo;
+import com.songtaste.weeklist.api.STWeeklistApi;
+import com.songtaste.weeklist.api.StTrackInfo;
 import com.songtaste.weeklist.utils.LogUtil;
 
 /**
@@ -21,7 +21,7 @@ public class DownloadServiceTest extends ServiceTestCase<DownloadService> {
         intent.setClassName("com.songtaste.weeklist", DownloadService.class.getName());
         DownloadService downloadService = ((DownloadService.DownloadBinder) bindService(intent)).getService();
         for (int i = 0; i < 20; i++) {
-            SongInfo si = Api.getWeeklist("2009-09-28").get(i);
+            StTrackInfo si = STWeeklistApi.getWeeklist("2009-09-28").get(i);
             LogUtil.d(si);
             downloadService.addToDownloadList(si);
         }
@@ -35,7 +35,7 @@ public class DownloadServiceTest extends ServiceTestCase<DownloadService> {
                 }
 
                 @Override
-                public void onDownloadComplete(SongInfo songInfo) {
+                public void onDownloadComplete(StTrackInfo stTrackInfo) {
                     LogUtil.d("downloadComplete");
                 }
 

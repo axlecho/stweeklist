@@ -7,7 +7,8 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.widget.Toast;
 
-import com.songtaste.weeklist.api.SongInfo;
+import com.songtaste.weeklist.api.StTrackInfo;
+import com.songtaste.weeklist.api.TrackInfo;
 import com.songtaste.weeklist.utils.LogUtil;
 
 import java.util.ArrayList;
@@ -42,8 +43,8 @@ public class DownloadService extends Service {
         }
     }
 
-    synchronized public void addToDownloadList(SongInfo songInfo) {
-        DownloadJob downloadJob = new DownloadJob(this, songInfo);
+    synchronized public void addToDownloadList(TrackInfo trackInfo) {
+        DownloadJob downloadJob = new DownloadJob(this, trackInfo);
         downloadJobList.add(downloadJob);
     }
 
@@ -62,7 +63,7 @@ public class DownloadService extends Service {
 
         downloadFlag = true;
         final DownloadJob currentJob = downloadJobList.get(0);
-        LogUtil.d("start download:" + currentJob.getSongInfo().getSongPath());
+        LogUtil.d("start download:" + currentJob.getTrackInfo().getUrl());
         final DownloadJob.OnDownloadListener listener = new DownloadJob.OnDownloadListener() {
 
             @Override
@@ -70,7 +71,7 @@ public class DownloadService extends Service {
             }
 
             @Override
-            public void onDownloadComplete(SongInfo songInfo) {
+            public void onDownloadComplete(TrackInfo trackInfo) {
                 LogUtil.d("download complete");
                 downloadJobList.remove(currentJob);
                 downloadnext();

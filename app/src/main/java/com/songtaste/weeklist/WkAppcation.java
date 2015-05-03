@@ -2,7 +2,7 @@ package com.songtaste.weeklist;
 
 import android.app.Application;
 
-import com.songtaste.weeklist.api.SongInfo;
+import com.songtaste.weeklist.api.TrackInfo;
 import com.songtaste.weeklist.utils.SqlUtil;
 
 import java.util.List;
@@ -18,13 +18,13 @@ public class WkAppcation extends Application {
         SqlUtil.init(getApplicationContext());
     }
 
-    private List<SongInfo> songInfoList;
+    private List<? extends TrackInfo> trackInfoList;
 
-    public List<SongInfo> getSongInfoList() {
-        return songInfoList;
+    public List<? extends TrackInfo> getTrackInfoList() {
+        return trackInfoList;
     }
 
-    public void setSongInfoList(List<SongInfo> songInfoList) {
-        this.songInfoList = songInfoList;
+    public void setTrackInfoList(List<? extends TrackInfo> trackInfoList) {
+        this.trackInfoList = trackInfoList;
     }
 }

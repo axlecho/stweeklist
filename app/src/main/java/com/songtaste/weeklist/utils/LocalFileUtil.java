@@ -2,7 +2,8 @@ package com.songtaste.weeklist.utils;
 
 import android.content.Context;
 
-import com.songtaste.weeklist.api.SongInfo;
+import com.songtaste.weeklist.api.LocalTrackInfo;
+import com.songtaste.weeklist.api.StTrackInfo;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,13 +26,13 @@ public class LocalFileUtil {
      * @param context
      * @return 封装后的mp3信息
      */
-    public static List<SongInfo> scanMusic(Context context) {
-        List<SongInfo> songInfoList = new ArrayList<>();
+    public static List<LocalTrackInfo> scanMusic(Context context) {
+        List<LocalTrackInfo> localTrackInfoList = new ArrayList<>();
         List<String> dirStringList = SqlUtil.getMusicPath(context);
         for (String dirString : dirStringList) {
-            songInfoList.addAll(scanMusic(dirString));
+            localTrackInfoList.addAll(scanMusic(dirString));
         }
-        return songInfoList;
+        return localTrackInfoList;
     }
 
     /**
@@ -41,12 +42,13 @@ public class LocalFileUtil {
      * @return 封装后的mp3信息
      */
 
-    public static List<SongInfo> scanMusic(String dirString) {
-        List<SongInfo> songInfoList = new ArrayList<>();
+    public static List<LocalTrackInfo> scanMusic(String dirString) {
+
+        List<LocalTrackInfo> localTrackInfoList = new ArrayList<>();
         File dir = new File(dirString);
         if (!dir.isDirectory()) {
             LogUtil.d(dirString + "is not a directory.");
-            return songInfoList;
+            return localTrackInfoList;
         }
 
         String[] musicStringList = dir.list(new FilenameFilter() {
@@ -57,10 +59,10 @@ public class LocalFileUtil {
         });
 
         for (String musicString : musicStringList) {
-            SongInfo si = SongInfo.buildFromLocalFileName(dirString + musicString);
-            songInfoList.add(si);
+            LocalTrackInfo lti = LocalTrackInfo.buildFromLocalFileName(dirString + musicString);
+            localTrackInfoList.add(lti);
         }
-        return songInfoList;
+        return localTrackInfoList;
     }
 
     public static String getLyric(String songPath) {

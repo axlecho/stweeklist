@@ -10,8 +10,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.TextView;
 
-import com.songtaste.weeklist.api.Api;
-import com.songtaste.weeklist.api.SongInfo;
+import com.songtaste.weeklist.api.STWeeklistApi;
+import com.songtaste.weeklist.api.StTrackInfo;
 import com.songtaste.weeklist.utils.LogUtil;
 
 import java.util.List;
@@ -37,18 +37,18 @@ public class DownloadServiceTestActivity extends Activity {
             public void onServiceConnected(ComponentName name, IBinder service) {
                 LogUtil.d("onServiceConnected");
                 downloadService = ((DownloadService.DownloadBinder) service).getService();
-                new AsyncTask<Integer, Void, List<SongInfo>>() {
+                new AsyncTask<Integer, Void, List<StTrackInfo>>() {
 
                     @Override
-                    protected List<SongInfo> doInBackground(Integer... params) {
+                    protected List<StTrackInfo> doInBackground(Integer... params) {
                         LogUtil.d("get mp3 info");
-                        return Api.getWeeklist("2009-09-28");
+                        return STWeeklistApi.getWeeklist("2009-09-28");
                     }
 
                     @Override
-                    protected void onPostExecute(List<SongInfo> songInfoList) {
-                        for (SongInfo songInfo : songInfoList) {
-                            downloadService.addToDownloadList(songInfo);
+                    protected void onPostExecute(List<StTrackInfo> stTrackInfoList) {
+                        for (StTrackInfo stTrackInfo : stTrackInfoList) {
+                            downloadService.addToDownloadList(stTrackInfo);
                         }
 
                         for (DownloadJob job : downloadService.getDownloadJobList()) {
@@ -61,7 +61,7 @@ public class DownloadServiceTestActivity extends Activity {
                                 }
 
                                 @Override
-                                public void onDownloadComplete(SongInfo songInfo) {
+                                public void onDownloadComplete(StTrackInfo stTrackInfo) {
                                     tv.setText("完成");
                                 }
 
@@ -73,7 +73,7 @@ public class DownloadServiceTestActivity extends Activity {
                         }
 
                         downloadService.downloadnext();
-                        super.onPostExecute(songInfoList);
+                        super.onPostExecute(stTrackInfoList);
                     }
                 }.execute();
             }

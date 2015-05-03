@@ -8,8 +8,9 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 
-import com.songtaste.weeklist.api.Api;
-import com.songtaste.weeklist.api.SongInfo;
+import com.songtaste.weeklist.api.STWeeklistApi;
+import com.songtaste.weeklist.api.StTrackInfo;
+import com.songtaste.weeklist.api.TrackInfo;
 import com.songtaste.weeklist.utils.LocalFileUtil;
 import com.songtaste.weeklist.utils.LogUtil;
 
@@ -46,7 +47,7 @@ public class PlayerService extends Service {
         }
     }
 
-    private List<SongInfo> songInfoList;
+    private List<? extends TrackInfo> trackInfoList;
 
     private MediaPlayer mp = new MediaPlayer();
     private int curIndex = 0;
@@ -57,7 +58,7 @@ public class PlayerService extends Service {
 
     @Override
     public void onCreate() {
-        songInfoList = ((WkAppcation) this.getApplication()).getSongInfoList();
+        trackInfoList = ((WkAppcation) this.getApplication()).getTrackInfoList();
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -122,20 +123,18 @@ public class PlayerService extends Service {
     public void previous() {
         curIndex--;
         if (curIndex < 0) {
-            curIndex = songInfoList.size() - 1;
+            curIndex = trackInfoList.size() - 1;
         }
         pause();
-        setLyric();
         reset();
     }
 
     public void next() {
         curIndex++;
-        if (curIndex >= songInfoList.size()) {
+        if (curIndex >= trackInfoList.size()) {
             curIndex = 0;
         }
         pause();
-        setLyric();
         reset();
     }
 
@@ -155,13 +154,12 @@ public class PlayerService extends Service {
     }
 
     public void playSongIndex(int position) {
-        LogUtil.d("play:" + position + " " + songInfoList.get(position).getSongPath());
-        if (position > songInfoList.size()) {
+        LogUtil.d("play:" + position + " " + trackInfoList.get(position).getUrl());
+        if (position > trackInfoList.size()) {
             return;
         }
         curIndex = position;
         pause();
-        setLyric();
         reset();
     }
 
@@ -173,17 +171,14 @@ public class PlayerService extends Service {
         return playmode;
     }
 
-    private void setLyric() {
-        for (PlayerInterface player : playerList) {
-            player.setSongName(songInfoList.get(curIndex).getSongName());
-            String IyricString = LocalFileUtil.getLyric(songInfoList.get(curIndex).getSongPath());
-            player.setLyric(IyricString);
-        }
-    }
 
     private void reset() {
-        if (songInfoList.get(curIndex).getIdx() == -1) {
-            String mp3Url = songInfoList.get(curIndex).getSongPath();
+
+        TrackInfo trackInfo = trackInfoList.get(curIndex);
+        if (trackInfo instanceof StTrackInfo) {
+            startPlayMp3AsyncTask();
+        } else {
+            String mp3Url = trackInfoList.get(curIndex).getUrl();
             try {
                 if (mp3Url == null) {
                     return;
@@ -196,8 +191,6 @@ public class PlayerService extends Service {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else {
-            startPlayMp3AsyncTask();
         }
     }
 
@@ -207,19 +200,16 @@ public class PlayerService extends Service {
             LogUtil.d("playMp3AsyncTask is canceled");
         }
         playMp3AsyncTask = new PlayMp3AsyncTask();
-        playMp3AsyncTask.execute(songInfoList.get(curIndex).getSongID());
+        StTrackInfo stTrackInfo = (StTrackInfo) trackInfoList.get(curIndex);
+        playMp3AsyncTask.execute(stTrackInfo.getSongID());
     }
 
     public void updateSongList() {
-        songInfoList = ((WkAppcation) this.getApplication()).getSongInfoList();
-        if (songInfoList.size() == 0) {
+        trackInfoList = ((WkAppcation) this.getApplication()).getTrackInfoList();
+        if (trackInfoList.size() == 0) {
             return;
         }
-
         curIndex = 0;
-        if (!mp.isPlaying()) {
-            setLyric();
-        }
     }
 
     private NotificationPlayer notificationPlayer;
@@ -254,7 +244,7 @@ public class PlayerService extends Service {
         protected String doInBackground(Integer... params) {
             int id = params[0];
             LogUtil.d(id);
-            return Api.getMp3Url(id);
+            return STWeeklistApi.getMp3Url(id);
         }
 
         @Override
@@ -283,10 +273,8 @@ public class PlayerService extends Service {
         } else {
             player.setPlayStatus(PlayerInterface.PAUSE_STATUS);
         }
-        if (songInfoList != null && songInfoList.size() != 0) {
-            player.setSongName(songInfoList.get(curIndex).getSongName());
-            String IyricString = new LocalFileUtil().getLyric(songInfoList.get(curIndex).getSongPath());
-            player.setLyric(IyricString);
+        if (trackInfoList != null && trackInfoList.size() != 0) {
+            player.setSongName(trackInfoList.get(curIndex).getTrackName());
         }
         playerList.add(player);
     }
