@@ -1,9 +1,11 @@
-package com.songtaste.weeklist.utils;
+package com.songtaste.weeklist.api;
 
 import android.content.Context;
 
 import com.songtaste.weeklist.api.LocalTrackInfo;
 import com.songtaste.weeklist.api.StTrackInfo;
+import com.songtaste.weeklist.utils.LogUtil;
+import com.songtaste.weeklist.utils.SqlUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,7 +20,7 @@ import java.util.List;
 /**
  * Created by axlecho on 2015/4/22.
  */
-public class LocalFileUtil {
+public class LocalFileApi {
 
     /**
      * 扫描数据库里保存的文件夹下的所有mp3 (非递归)

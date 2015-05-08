@@ -17,9 +17,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.songtaste.weeklist.api.LocalFileApi;
 import com.songtaste.weeklist.api.LocalTrackInfo;
-import com.songtaste.weeklist.api.TrackInfo;
-import com.songtaste.weeklist.utils.LocalFileUtil;
 import com.songtaste.weeklist.utils.LogUtil;
 
 import java.util.List;
@@ -278,7 +277,7 @@ public class LocalActivity extends ActionBarActivity {
     }
 
     public void updateSong() {
-        List<LocalTrackInfo> localTrackInfoList = LocalFileUtil.scanMusic(LocalActivity.this);
+        List<LocalTrackInfo> localTrackInfoList = LocalFileApi.scanMusic(LocalActivity.this);
         weeklistAdapter.upDateData(localTrackInfoList);
         ((WkAppcation) getApplication()).setTrackInfoList(localTrackInfoList);
 //        playerService.stop();

@@ -11,7 +11,6 @@ import android.os.IBinder;
 import com.songtaste.weeklist.api.STWeeklistApi;
 import com.songtaste.weeklist.api.StTrackInfo;
 import com.songtaste.weeklist.api.TrackInfo;
-import com.songtaste.weeklist.utils.LocalFileUtil;
 import com.songtaste.weeklist.utils.LogUtil;
 
 import java.io.IOException;
@@ -85,7 +84,6 @@ public class PlayerService extends Service {
         handleIntent(intent);
         return super.onStartCommand(intent, flags, startId);
     }
-
 
     public void play() {
         if (!mp.isPlaying()) {
@@ -173,7 +171,6 @@ public class PlayerService extends Service {
 
 
     private void reset() {
-
         TrackInfo trackInfo = trackInfoList.get(curIndex);
         if (trackInfo instanceof StTrackInfo) {
             startPlayMp3AsyncTask();
@@ -186,11 +183,21 @@ public class PlayerService extends Service {
                 LogUtil.d(mp3Url);
                 mp.reset();
                 mp.setDataSource(mp3Url);
-                mp.prepare();
-                play();
+                mp.prepareAsync();
+                mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        play();
+                    }
+                });
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        for (PlayerInterface player : playerList) {
+            player.setSongName(trackInfoList.get(curIndex).getTrackName());
         }
     }
 

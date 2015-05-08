@@ -12,12 +12,13 @@ import com.songtaste.weeklist.api.StTrackInfo;
 import com.songtaste.weeklist.api.TrackInfo;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 class TracklistAdapter extends BaseAdapter {
     private String playedSongnName = "";
-    List<? extends TrackInfo> trackInfoList = new ArrayList<>();
-    Context context;
+    private List<? extends TrackInfo> trackInfoList = new ArrayList<>();
+    private Context context;
 
     public TracklistAdapter(Context context) {
         this.context = context;
@@ -76,6 +77,14 @@ class TracklistAdapter extends BaseAdapter {
         }
 
         this.trackInfoList = trackInfoList;
+    }
+
+    public void addData(Collection trackInfoList) {
+        this.trackInfoList.addAll(trackInfoList);
+    }
+
+    public List<? extends TrackInfo> getData() {
+        return trackInfoList;
     }
 
     public static class ViewHolder {

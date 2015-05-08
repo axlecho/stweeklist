@@ -69,6 +69,6 @@ public class StTrackInfo implements TrackInfo {
 
     @Override
     public String getUrl() {
-        return null;
+        return "";
     }
 }

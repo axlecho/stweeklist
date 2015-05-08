@@ -1,9 +1,12 @@
 package com.songtaste.weeklist;
 
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
@@ -16,11 +19,19 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.songtaste.weeklist.api.DoufmApi;
+import com.songtaste.weeklist.api.DoufmChannelInfo;
+import com.songtaste.weeklist.api.DoufmTrackInfo;
+import com.songtaste.weeklist.api.LocalFileApi;
 import com.songtaste.weeklist.api.LocalTrackInfo;
-import com.songtaste.weeklist.utils.LocalFileUtil;
+import com.songtaste.weeklist.api.STWeeklistApi;
+import com.songtaste.weeklist.api.StTrackInfo;
+import com.songtaste.weeklist.api.TrackInfo;
 import com.songtaste.weeklist.utils.LogUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DoufmActivity extends ActionBarActivity {
@@ -147,6 +158,8 @@ public class DoufmActivity extends ActionBarActivity {
     protected TracklistAdapter weeklistAdapter;
     private ServiceConnection playerServiceConnection;
     private PlayerService playerService;
+    private ServiceConnection downloadServiceConnection;
+    private DownloadService downloadService;
 
     private boolean deadflag = false;
 
@@ -155,6 +168,8 @@ public class DoufmActivity extends ActionBarActivity {
     private View lyricView;
     private TextView lyricTextView;
     private BgManager bgManager = new BgManager();
+
+    private DoufmChannelInfo currentChannelInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,6 +186,32 @@ public class DoufmActivity extends ActionBarActivity {
                 playerService.playSongIndex(position);
             }
         });
+
+        weeklistListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                final TrackInfo ti = weeklistAdapter.getItem(position);
+                new AlertDialog.Builder(DoufmActivity.this).setMessage("下载:" + ti.getTrackName())
+                        .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                downloadService.addToDownloadList(ti);
+                                downloadService.startDownload();
+                                dialog.dismiss();
+                            }
+                        }).show();
+                return true;
+            }
+        });
+
+        weeklistListView.setOnScrollListener(new EndlessScrollListener() {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                LogUtil.v("加载更多");
+                loadMoreSong();
+            }
+        });
+
         lyricView = findViewById(R.id.lyric_scrollview);
         bgManager.bgImageView = (ImageView) findViewById(R.id.bg_imageview);
 
@@ -206,6 +247,19 @@ public class DoufmActivity extends ActionBarActivity {
                 playerService.removePlayer(player);
             }
         };
+
+        downloadServiceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                LogUtil.d("download service connected");
+                downloadService = ((DownloadService.DownloadBinder) service).getService();
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+
+            }
+        };
     }
 
     @Override
@@ -214,16 +268,23 @@ public class DoufmActivity extends ActionBarActivity {
         Intent service = new Intent(this.getApplicationContext(), PlayerService.class);
         this.startService(service);
         this.bindService(service, playerServiceConnection, Context.BIND_AUTO_CREATE);
+
+        service = new Intent(this.getApplicationContext(), DownloadService.class);
+        this.startService(service);
+        this.bindService(service, downloadServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         this.unbindService(playerServiceConnection);
+        this.unbindService(downloadServiceConnection);
 
         if (deadflag) {
             playerService.hideNotification();
             playerService.stopSelf();
+            playerService.stopSelf();
+            downloadService.stopSelf();
         }
     }
 
@@ -231,6 +292,8 @@ public class DoufmActivity extends ActionBarActivity {
     protected void onDestroy() {
         playerService.hideNotification();
         playerService.stopSelf();
+        playerService.stopSelf();
+        downloadService.stopSelf();
         super.onDestroy();
     }
 
@@ -253,7 +316,7 @@ public class DoufmActivity extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_local, menu);
+        getMenuInflater().inflate(R.menu.menu_weeklist, menu);
         return true;
     }
 
@@ -267,23 +330,55 @@ public class DoufmActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
-        } else if (id == R.id.add_musicdir) {
+        } else if (id == R.id.action_showdownload) {
             Intent intent = new Intent();
-            intent.setClass(this, AddMusicDirActivity.class);
-            startActivityForResult(intent, 0);
+            intent.setClass(this, DownloadActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    public void loadMoreSong() {
+        DoufmApi.getTrackInfoFormChannel(currentChannelInfo.getKey(), new DoufmApi.OnGetTrackInfoCompleteListener() {
+            @Override
+            public void complete(List<DoufmTrackInfo> doufmTrackInfoList) {
+                weeklistAdapter.addData(doufmTrackInfoList);
+                ((WkAppcation) getApplication()).setTrackInfoList(weeklistAdapter.getData());
+                playerService.updateSongList();
+                weeklistAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void failed() {
+                LogUtil.e("get trackInfo form channel failed");
+            }
+        });
+    }
+
     public void updateSong() {
-        List<LocalTrackInfo> localTrackInfoList = LocalFileUtil.scanMusic(DoufmActivity.this);
-        weeklistAdapter.upDateData(localTrackInfoList);
-        ((WkAppcation) getApplication()).setTrackInfoList(localTrackInfoList);
-//        playerService.stop();
-        playerService.updateSongList();
-        weeklistListView.setSelection(0);
-        weeklistAdapter.notifyDataSetChanged();
+        DoufmApi.getChannelInfo(new DoufmApi.OnGetChannelInfoCompleteListener() {
+            @Override
+            public void complete(List<DoufmChannelInfo> doufmChannelInfoList) {
+                for (DoufmChannelInfo ci : doufmChannelInfoList) {
+                    if (ci.getDescribe().equals("动漫")) {
+                        currentChannelInfo = ci;
+                    }
+                }
+
+                if (currentChannelInfo == null) {
+                    LogUtil.e("can not find channel:动漫");
+                    return;
+                }
+
+                loadMoreSong();
+            }
+
+            @Override
+            public void failed() {
+                LogUtil.e("get channel info failed");
+            }
+        });
     }
 
     @Override

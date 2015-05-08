@@ -31,7 +31,7 @@ import com.songtaste.weeklist.utils.LogUtil;
 import java.text.ParseException;
 import java.util.List;
 
-public class WeeklistActivity extends ActionBarActivity {
+public class StWeeklistActivity extends ActionBarActivity {
 
     protected ListView weeklistListView;
     protected TracklistAdapter weeklistAdapter;
@@ -158,7 +158,7 @@ public class WeeklistActivity extends ActionBarActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 final TrackInfo ti = weeklistAdapter.getItem(position);
-                new AlertDialog.Builder(WeeklistActivity.this).setMessage("下载:" + ti.getTrackName())
+                new AlertDialog.Builder(StWeeklistActivity.this).setMessage("下载:" + ti.getTrackName())
                         .setPositiveButton("确认", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -220,7 +220,7 @@ public class WeeklistActivity extends ActionBarActivity {
     protected void onStop() {
         super.onStop();
         this.unbindService(playerServiceConnection);
-
+        this.unbindService(downloadServiceConnection);
         if (deadflag) {
             playerService.hideNotification();
             playerService.stopSelf();
@@ -279,6 +279,11 @@ public class WeeklistActivity extends ActionBarActivity {
             intent.setClass(this, LocalActivity.class);
             getWeeklistAsyncTask.cancel(true);
             startActivity(intent);
+        } else if (id == R.id.action_doufm) {
+            Intent intent = new Intent();
+            intent.setClass(this, DoufmActivity.class);
+            getWeeklistAsyncTask.cancel(true);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -315,7 +320,7 @@ public class WeeklistActivity extends ActionBarActivity {
 
         @Override
         protected void onCancelled() {
-            Toast.makeText(WeeklistActivity.this, STWeeklistApi.getError(), Toast.LENGTH_LONG).show();
+            Toast.makeText(StWeeklistActivity.this, STWeeklistApi.getError(), Toast.LENGTH_LONG).show();
             LogUtil.e(STWeeklistApi.getError());
             progressMenu.setVisible(false);
             progressMenu.setActionView(null);
@@ -331,7 +336,7 @@ public class WeeklistActivity extends ActionBarActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
-                            WeeklistActivity.this.finish();
+                            StWeeklistActivity.this.finish();
                             deadflag = true;
                         }
                     })

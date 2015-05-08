@@ -15,27 +15,20 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".WeeklistActivity"
+            android:name=".StWeeklistActivity"
             android:label="@string/title_activity_weeklist"
-            android:launchMode="singleTop">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:launchMode="singleTop" />
         <activity
             android:name=".DownloadActivity"
             android:label="@string/title_activity_download" />
         <activity
             android:name=".LocalActivity"
-            android:allowEmbedded="@string/title_activity_local" />
+            android:label="@string/title_activity_local"
+            android:launchMode="singleTop" />
         <activity
-            android:name=".DownloadServiceTestActivity"
-            android:label="@string/title_activity_fortest" />
-        <activity
-            android:name=".TestActivity"
-            android:label="@string/title_activity_fortest" />
+            android:name=".DoufmActivity"
+            android:label="@string/title_activity_doufm"
+            android:launchMode="singleTop" />
 
         <service
             android:name=".PlayerService"
@@ -50,6 +43,25 @@
             android:name=".AddMusicDirActivity"
             android:label="@string/title_activity_add_music_dir"
             android:theme="@android:style/Theme.Dialog" />
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+
+        <activity
+            android:name=".DownloadServiceTestActivity"
+            android:label="@string/title_activity_fortest" />
+        <activity
+            android:name=".TestActivity"
+            android:label="@string/title_activity_fortest" />
+
     </application>
 
 </manifest>

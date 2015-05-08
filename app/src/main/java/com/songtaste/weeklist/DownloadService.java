@@ -63,7 +63,7 @@ public class DownloadService extends Service {
 
         downloadFlag = true;
         final DownloadJob currentJob = downloadJobList.get(0);
-        LogUtil.d("start download:" + currentJob.getTrackInfo().getUrl());
+        LogUtil.d("start download:" + currentJob.getTrackInfo().getTrackName());
         final DownloadJob.OnDownloadListener listener = new DownloadJob.OnDownloadListener() {
 
             @Override

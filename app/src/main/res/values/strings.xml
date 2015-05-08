@@ -8,10 +8,11 @@
     <string name="title_activity_download">DownloadQueue</string>
     <string name="title_activity_fortest">Test</string>
     <string name="title_activity_local">本地播放器</string>
+    <string name="title_activity_doufm">Doufm</string>
     <string name="title_activity_add_music_dir">AddMusicDirActivity</string>
-
-
     <string name="playmode_listrepeated">列表循环</string>
     <string name="playmode_listonce">顺序播放</string>
     <string name="playmode_onerepeated">单曲循环</string>
+    <string name="title_activity_main">MainActivity</string>
+
 </resources>

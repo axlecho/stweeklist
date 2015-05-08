@@ -4,9 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
 
-import com.songtaste.weeklist.api.STWeeklistApi;
 import com.songtaste.weeklist.api.ServerConst;
-import com.songtaste.weeklist.api.StTrackInfo;
 import com.songtaste.weeklist.api.TrackInfo;
 import com.songtaste.weeklist.utils.LogUtil;
 
@@ -54,6 +52,11 @@ public class DownloadJob {
         dirPath = SDcardPath + File.separator
                 + context.getResources().getString(R.string.app_name)
                 + File.separator + ServerConst.FILEDIR;
+        File dir = new File(dirPath);
+        if (dir.exists() == false) {
+            dir.mkdirs();
+        }
+
         filePath = dirPath + File.separator + trackInfo.getTrackName() + ".mp3";
         LogUtil.d(filePath);
     }
@@ -91,7 +94,7 @@ public class DownloadJob {
             OutputStream output;
             InputStream input;
 
-            // mp3UrlString = STWeeklistApi.getMp3Url(trackInfo.getSongID());
+            mp3UrlString = trackInfo.getUrl();
             if (mp3UrlString.equals("")) {
                 cancel(true);
                 return "get Mp3url failed";
@@ -182,6 +185,4 @@ public class DownloadJob {
     public TrackInfo getTrackInfo() {
         return trackInfo;
     }
-
-
 }
